@@ -1,0 +1,147 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+ <!-- norman -->
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
+<link rel="import" href="../../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<!-- <link rel="import" href="styles/app-theme.html">
+<link rel="import" href="styles/shared-styles.html"> -->
+ <!-- end of norman -->
+
+
+<dom-module id="userTracker">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+   /*   google-map {
+        height: 500px;
+        width: 500px;
+        display: block;
+      }*/
+    </style>
+
+    <firebase-collection id="refFirebaseLocation" location="https://legendmanchesterma.firebaseIO.com/location"  data="{{locationCollection}}"></firebase-collection>
+
+
+    <!--  <div class="googlemap">
+    <google-map latitude="37.77493" longitude="-122.41942" zoom="17" fit-to-markers mouseEvents="true" >
+    
+          <google-map-marker latitude="{{latitude}}" longitude="{{longitude}}"  on-google-map-marker-mouseup="markerMoved"
+              draggable="true" animation="DROP" mouse-events="true" title="You Location!" latitude="{{latitude}}" longitude="{{longitude}}" ></google-map-marker>
+        </google-map>
+    </div> -->
+
+
+
+    <!-- <paper-header-panel mode="waterfall">
+      <div class="paper-header">Location</div>
+      <div class="content fit">
+        <div class="vertical-section">
+          <paper-input id="name"  label="Name..."></paper-input>
+          <paper-input id="description" label="Description..."></paper-input>
+          <paper-input id="latitude" label="Latitude..." value="{{latitude}}"></paper-input>
+          <paper-input id="longitude" label="Longitude..." value="{{longitude}}"></paper-input>
+          <paper-input id="iconMessage" label="Icon message..."></paper-input>
+          <paper-button raised on-click="_submit">Submit</paper-button>
+          <paper-toast id="toast" duration="3000"></paper-toast>
+        </div>
+      </div>
+     </paper-header-panel> -->
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'userTracker',
+      properties: {
+        defaultLatitude: {
+          type: String,
+          notify: true,
+          value: '42.573760'
+        },
+        latitude: {
+          type: String,
+          notify: true,
+          value: '42.573760'
+        },
+         defaultLongitude: {
+          type: String,
+          notify: true,
+          value: '-70.769512'
+        },
+        longitude: {
+          type: String,
+          notify: true,
+          value: '-70.769512'
+        }
+      },
+      ready: function() {
+      },
+      markerMoved: function(event) {
+        var v = event.target;
+        this.latitude = v.latitude;
+        this.longitude = v.longitude;
+      },
+      _submit: function() {
+        var msg = 'Your information has been submitted successfully.';
+
+        if (!this._addToFirebase()) {
+          msg = 'Error: Your information has NOT been submitted.';
+        }
+        this._popToast(msg);
+      },
+      _addToFirebase: function() {
+        // todo need better error handling?
+        try {
+          this.$.refFirebaseLocation.add(
+            {
+              name: this.$.name.value,
+              description: this.$.description.value,
+              latitude: this.$.latitude.value,
+              longitude: this.$.longitude.value,
+              iconMessage: this.$.iconMessage.value
+            }
+          );
+          this.$.name.value = this.$.description.value = '';
+          this.$.iconMessage.value = '';
+          this.latitude = this.defaultLatitude;
+          this.longitude = this.defaultLongitude;
+          return true;
+        }
+        catch (e) {
+          console.log(e.message);
+          return false;
+        }
+      },
+      _popToast: function(newValue) {
+        this.$.toast.text = newValue;
+        this.$.toast.show();
+      }
+
+    });
+  </script>
+</dom-module>
